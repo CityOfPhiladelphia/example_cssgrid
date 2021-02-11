@@ -16,12 +16,26 @@
         REFINE PANEL
       </div>
 
-      <div class="menu">
+      <div
+        v-show="isTablet || isDesktop || !isMapVisible"
+        class="locations-panel"
+      >
         LOCATIONS PANEL
       </div>
 
-      <div class="content">
+      <div
+        v-show="isTablet || isDesktop || isMapVisible"
+        class="map-panel"
+      >
         MAP PANEL
+      </div>
+
+      <div
+        v-if="isMobile"
+        class="toggle-button"
+        @click="toggleMap"
+      >
+        TOGGLE
       </div>
     </main>
 
@@ -76,12 +90,18 @@ export default {
         },
       },
       refinePanel: true,
+      isMapVisible: false,
+      buttonText: 'Toggle to map',
     };
   },
   computed: {
     gridRows() {
       let value;
-      if (this.refinePanel) {
+      if (this.isMobile && this.refinePanel) {
+        value = '100px auto 40px';
+      } else if (this.isMobile && !this.refinePanel) {
+        value = 'auto 40px';
+      } else if (this.refinePanel) {
         value = '100px auto';
       } else {
         value = 'auto';
@@ -117,6 +137,11 @@ export default {
   },
   mounted() {
     this.handleResize();
+    if (!this.i18nEnabled) {
+      this.$data.buttonText = this.$data.isMapVisible ? 'Toggle to resource list' : 'Toggle to map';
+    } else {
+      this.$data.buttonText = this.$data.isMapVisible ? 'app.viewList' : 'app.viewMap';
+    }
   },
   methods: {
     handleResize () {
@@ -144,6 +169,23 @@ export default {
         }
       });
     },
+    toggleMap() {
+      this.$data.isMapVisible = !this.$data.isMapVisible;
+      console.log('toggleMap is running, this.$data.isMapVisible:', this.$data.isMapVisible);
+      if (this.$data.isMapVisible === true) {
+        console.log('toggleMap is running, this.$data.isMapVisible === true');
+        // console.log('setTimeout function is running');
+        // if (this.mapType === 'leaflet') {
+        //   this.$store.state.map.map.invalidateSize();
+        // } else if (this.mapType === 'mapbox') {
+        let themap = this.$store.map;
+        setTimeout(function() {
+          console.log('mapbox running map resize now');
+          themap.resize();
+          console.log('mapbox ran map resize');
+        }, 250);
+      }
+    },
   },
 };
 
@@ -153,22 +195,10 @@ export default {
 
 @import "./assets/scss/main.scss";
 
-// html {
-//   box-sizing: border-box;
-//   // height: 100%;
-//   background-color: #ffeead;
-//   margin: 0px;
-// }
-//
-// body {
-//   height: 100%;
-// }
-
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  // height: 100%;
   text-align: center;
   color: #000000;
 }
@@ -182,12 +212,20 @@ export default {
 }
 
 .main-container {
-  // height: 100%;
   display: grid;
-  // padding: 0px;
   grid-gap: 1px;
   grid-template-columns: repeat(2, 1fr);
   // grid-template-rows: 40px auto 40px;
+}
+
+@media screen and (max-width: 767px) {
+  .locations-panel {
+    grid-column: 1 / -1;
+  }
+
+  .map-panel {
+    grid-column: 1 / -1;
+  }
 }
 
 .main-container > div {
@@ -198,29 +236,21 @@ export default {
   color: #000000;
 }
 
-.header {
-  background-color: #2176d2;
-  grid-column: 1 / -1;
-  // height: 30px;
-}
-
 .refine {
   background-color: #f0f0f0;
   grid-column: 1 / -1;
 }
 
-
-.menu {
+.locations-panel {
   background-color: #88d8b0;
 }
 
-.content {
+.map-panel {
   background-color: #ff6f69;
 }
 
-.footer {
-  background-color: #2176d2;
-  grid-column: 1 / -1;
+.toggle-button {
+  grid-column: 1 / -1
 }
 
 
